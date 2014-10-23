@@ -23,7 +23,7 @@ def filter_animals(animal_list):
     """
     Jesteś informatykiem w firmie Noe Shipping And Handling. Firma ta zajmuje
     się międzykontynentalnym przewozem zwierząt.
-
+    
     Dostałeś listę zwierząt które są dostępne w pobliskim zoo do transportu.
 
     Mususz z tej listy wybrać listę zwierząt które zostaną spakowane na statek,
@@ -50,6 +50,48 @@ def filter_animals(animal_list):
 
     :param animal_list:
     """
+    statek = {}
+    for animal in animals:
+        if animal['genus'] in statek:
+            if animal['sex'] == 'male':
+                if statek[animal['genus']][0] == {}:
+                    statek[animal['genus']][0] = animal
+                else:
+                    statek[animal['genus']][0] = compareAnimals(statek[animal['genus']][0], animal)
+            else:
+                if statek[animal['genus']][1] == {}:
+                    statek[animal['genus']][1] = animal
+                else:
+                    statek[animal['genus']][1] = compareAnimals(statek[animal['genus']][1], animal)
+        else:
+            if animal['sex'] == 'male':
+                statek[animal['genus']] = [animal, {}]
+            else:
+                statek[animal['genus']] = [{}, animal]
+    lista = []    
+    for z in (statek.items()):
+        lista.append(z[0])
+        lista.append(z[1])
+    lista.sort(key=lambda tup: (tup['genus'], tup['name']))
+    print(lista)
+
+def compareAnimals(a1, a2):
+    if mass_generator(a1['mass']) > mass_generator(a2['mass']):
+        return a2
+    else:
+        return a1
+
+def mass_generator(d): 
+        mass, unit = d
+        if unit == 'kg': 
+            return mass
+        if unit == 'g':
+            return mass/1000
+        if unit == 'mg':
+            return mass/1E-6
+        if unit == 'Mg': 
+            return mass*1000
 
 if __name__ == "__main__":
     animals = load_animals()
+    filter_animals(animals)
