@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+from numpy.lib.polynomial import poly1d, polyint, polyval
 
 
 class Integrator(object):
@@ -31,6 +32,26 @@ class Integrator(object):
                  [1, 3, 1] itp.
         :rtype: List of integers
         """
+        paramList = []
+        for elem in range(level):
+            param = 1
+            for i in range(level):
+                if elem != i:
+                    param = param*poly1d([1, -i])
+            param = polyint(param)
+            param = polyval(param,level-1)-polyval(param,0)
+            a = math.pow(-1,level-elem-1)/math.factorial(elem)/math.factorial(level-elem-1)
+            paramList.append(param*a)
+        return paramList
+    
+    def NCintegral(self, func, func_range):
+        h = (func_range[1]-func_range[0])/(self.level-1)
+        params = self.get_level_parameters(self.level)
+        integral = 0
+        for i in range(self.level):
+            integral += params[i]*func(func_range[0]+h*i)
+        return integral*h
+            
 
     def __init__(self, level):
         """
@@ -64,7 +85,12 @@ class Integrator(object):
         :return: Wynik całkowania.
         :rtype: float
         """
-
+        num_of_steps = math.floor(num_evaluations/self.level)
+        step = (func_range[1]-func_range[0])/num_of_steps
+        integral = 0
+        for i in range(num_of_steps):
+            integral += self.NCintegral(func, (func_range[0]+i*step, func_range[0]+(i+1)*step))
+        return integral
 
 if __name__ == '__main__':
     i = Integrator(3)
